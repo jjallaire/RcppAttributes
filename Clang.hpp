@@ -5,24 +5,10 @@
 
 #include "LibClang.h"
 
-extern "C" {
-
-typedef CXIndex (*ptr_clang_createIndex)(int excludeDeclarationsFromPCH,
-                                         int displayDiagnostics);
-typedef void (*ptr_clang_disposeIndex)(CXIndex index);
-
-} // extern "C"
-
 class Clang
 {
 public:
-   Clang()
-      : pLibClang_(NULL),
-        pClang_createIndex_(NULL),
-        pClang_disposeIndex_(NULL)
-   {
-   }
-
+   Clang();
    ~Clang();
 
 private:
@@ -38,10 +24,20 @@ public:
                        int displayDiagnostics);
    void disposeIndex(CXIndex index);
 
+   CXTranslationUnit parseTranslationUnit(
+                                      CXIndex CIdx,
+                                      const char *source_filename,
+                                      const char * const *command_line_args,
+                                      int num_command_line_args,
+                                      struct CXUnsavedFile *unsaved_files,
+                                      unsigned num_unsaved_files,
+                                      unsigned options);
+
+   void disposeTranslationUnit(CXTranslationUnit unit);
+
 private:
-   void* pLibClang_;
-   ptr_clang_createIndex pClang_createIndex_;
-   ptr_clang_disposeIndex pClang_disposeIndex_;
+   struct Impl;
+   Impl* pImpl_;
 };
 
 #endif // CLANG_HPP
