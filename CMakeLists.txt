@@ -22,3 +22,7 @@ set(SOURCE_FILES
 )
 
 add_executable(attribs ${SOURCE_FILES} ${HEADER_FILES})
+
+target_link_libraries(attribs
+    ${CMAKE_DL_LIBS}
+)
