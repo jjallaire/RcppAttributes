@@ -19,6 +19,7 @@ file(GLOB_RECURSE HEADER_FILES "*.h*")
 
 set(SOURCE_FILES
   Main.cpp
+  Clang.cpp
 )
 
 add_executable(attribs ${SOURCE_FILES} ${HEADER_FILES})
