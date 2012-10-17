@@ -16,9 +16,7 @@ namespace {
 
 #else
 
-bool loadLibrary(const std::string& libPath,
-                 void** ppLib,
-                 std::string* pError)
+bool loadLibrary(const std::string& libPath, void** ppLib, std::string* pError)
 {
    *ppLib = NULL;
    *ppLib = ::dlopen(libPath.c_str(), RTLD_NOW);
@@ -70,9 +68,8 @@ bool closeLibrary(void* pLib, std::string* pError)
 } // anonymous namespace
 
 #define LOAD_CLANG_SYMBOL(name) \
-   if (!loadSymbol(pLib_, "clang_ ## name", (void**)&name, &initError_)) \
+   if (!loadSymbol(pLib_, "clang_" #name, (void**)&name, &initError_)) \
        return;
-
 
 LibClang::LibClang(const std::string& libraryPath)
    : pLib_(NULL)
@@ -80,28 +77,17 @@ LibClang::LibClang(const std::string& libraryPath)
    if (!loadLibrary(libraryPath, (void**)&pLib_, &initError_))
        return;
 
-   if (!initSymbol("clang_createIndex", (void**)&createIndex))
-       return;
-   if (!initSymbol("clang_disposeIndex", (void**)&disposeIndex))
-       return;
-   if (!initSymbol("clang_parseTranslationUnit", (void**)&parseTranslationUnit))
-       return;
-   if (!initSymbol("clang_disposeTranslationUnit", (void**)&disposeTranslationUnit))
-       return;
-   if (!initSymbol("clang_getNumDiagnostics", (void**)&getNumDiagnostics))
-       return;
-   if (!initSymbol("clang_getDiagnostic", (void**)&getDiagnostic))
-       return;
-   if (!initSymbol("clang_disposeDiagnostic", (void**)&disposeDiagnostic))
-       return;
-   if (!initSymbol("clang_formatDiagnostic", (void**)&formatDiagnostic))
-       return;
-   if (!initSymbol("clang_defaultDiagnosticDisplayOptions", (void**)&defaultDiagnosticDisplayOptions))
-       return;
-   if (!initSymbol("clang_getCString", (void**)&getCString))
-       return;
-   if (!initSymbol("clang_disposeString", (void**)&disposeString))
-       return;
+   LOAD_CLANG_SYMBOL(createIndex)
+   LOAD_CLANG_SYMBOL(disposeIndex)
+   LOAD_CLANG_SYMBOL(parseTranslationUnit)
+   LOAD_CLANG_SYMBOL(disposeTranslationUnit)
+   LOAD_CLANG_SYMBOL(getNumDiagnostics)
+   LOAD_CLANG_SYMBOL(getDiagnostic)
+   LOAD_CLANG_SYMBOL(disposeDiagnostic)
+   LOAD_CLANG_SYMBOL(formatDiagnostic)
+   LOAD_CLANG_SYMBOL(defaultDiagnosticDisplayOptions)
+   LOAD_CLANG_SYMBOL(getCString)
+   LOAD_CLANG_SYMBOL(disposeString)
 }
 
 bool LibClang::isLoaded(std::string* pError)
@@ -132,8 +118,3 @@ LibClang::~LibClang()
    {
    }
 }
-
- bool LibClang::initSymbol(const std::string& name, void** ppSymbol)
- {
-    return loadSymbol(pLib_, name, ppSymbol, &initError_);
- }
