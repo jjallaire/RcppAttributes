@@ -4,9 +4,21 @@
 
 #include "Clang.hpp"
 
+std::string getLibClangPath()
+{
+#if defined(_WIN32)
+
+#elif defined(__APPLE__)
+
+
+#else
+   return "/usr/lib/libclang.so";
+#endif
+}
+
 int main(int argc, char * const argv[]) 
 {
-   LibClang libClang("libclang.so");
+   LibClang libClang(getLibClangPath());
    std::string initError;
    if (!libClang.isLoaded(&initError))
    {
