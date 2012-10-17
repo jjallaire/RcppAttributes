@@ -1,0 +1,2 @@
+useDynLib(RcppAttribPackage)
+exportPattern("^[[:alpha:]]+")

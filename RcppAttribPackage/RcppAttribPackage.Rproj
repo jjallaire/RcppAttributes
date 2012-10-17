@@ -13,5 +13,4 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 BuildType: Package
-PackagePath: RcppAttribPackage
 PackageInstallArgs: --no-multiarch
