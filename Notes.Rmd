@@ -1,6 +1,10 @@
 RcppAttributes
 ========================================================
 
+apt-get libclang1
+apt-get libclang-dev
+
+
 ```{r,eval=FALSE}
 compile.attributes(file=NA, dir=NA, target=c("package","script"))
 

@@ -3,18 +3,18 @@
 
 #include <string>
 
-#include "LibClang.h"
+#include "Clang-C.h"
 
-class Clang
+class LibClang
 {
 public:
-   Clang();
-   ~Clang();
+   LibClang();
+   ~LibClang();
 
 private:
    // disallow copying and asignment
-   Clang(const Clang&);
-   Clang& operator=(const Clang&);
+   LibClang(const LibClang&);
+   LibClang& operator=(const LibClang&);
 
 public:
 
@@ -34,6 +34,19 @@ public:
                                       unsigned options);
 
    void disposeTranslationUnit(CXTranslationUnit unit);
+
+   unsigned getNumDiagnostics(CXTranslationUnit unit);
+
+   CXDiagnostic getDiagnostic(CXTranslationUnit unit, unsigned index);
+
+   CXString formatDiagnostic(CXDiagnostic diag, unsigned options);
+
+   unsigned defaultDiagnosticDisplayOptions(void);
+
+   const char * getCString(CXString string);
+
+   void disposeString(CXString string);
+
 
 private:
    struct Impl;

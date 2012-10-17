@@ -5,20 +5,19 @@
 
 #include "Clang.hpp"
 
-
 int main(int argc, char * const argv[]) 
 {
-   Clang clang;
+   LibClang libClang;
    std::string initError;
-   if (!clang.initialize(&initError))
+   if (!libClang.initialize(&initError))
    {
       std::cerr << initError << std::endl;
       return EXIT_FAILURE;
    }
 
-   CXIndex index = clang.createIndex(0,0);
+   CXIndex index = libClang.createIndex(0,0);
 
-   CXTranslationUnit TU = clang.parseTranslationUnit(index,
+   CXTranslationUnit TU = libClang.parseTranslationUnit(index,
                                                      0,
                                                      argv,
                                                      argc,
@@ -26,9 +25,16 @@ int main(int argc, char * const argv[])
                                                      0,
                                                      CXTranslationUnit_None);
 
+   for (unsigned I = 0, N = libClang.getNumDiagnostics(TU); I != N; ++I) {
+       CXDiagnostic Diag = libClang.getDiagnostic(TU, I);
+       CXString String = libClang.formatDiagnostic(Diag,
+                               libClang.defaultDiagnosticDisplayOptions());
+       fprintf(stderr, "%s\n", libClang.getCString(String));
+       libClang.disposeString(String);
+     }
 
-   clang.disposeTranslationUnit(TU);
-   clang.disposeIndex(index);
+   libClang.disposeTranslationUnit(TU);
+   libClang.disposeIndex(index);
 
 	return EXIT_SUCCESS;
 }

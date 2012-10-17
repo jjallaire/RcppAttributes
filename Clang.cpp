@@ -103,49 +103,49 @@ bool closeLibrary(void* pLib, std::string* pError)
 } // anonymous namespace
 
 
-struct Clang::Impl
+struct LibClang::Impl
 {
    Impl()
-      : pLibClang(NULL),
-        pClang_createIndex(NULL),
-        pClang_disposeIndex(NULL),
-        pClang_parseTranslationUnit(NULL),
-        pClang_disposeTranslationUnit(NULL),
-        pClang_getNumDiagnostics(NULL),
-        pClang_getDiagnostic(NULL),
-        pClang_formatDiagnostic(NULL),
-        pClang_defaultDiagnosticDisplayOptions(NULL),
-        pClang_getCString(NULL),
-        pClang_disposeString(NULL)
+      : pLibClang_(NULL),
+        clang_createIndex_(NULL),
+        clang_disposeIndex_(NULL),
+        clang_parseTranslationUnit_(NULL),
+        clang_disposeTranslationUnit_(NULL),
+        clang_getNumDiagnostics_(NULL),
+        clang_getDiagnostic_(NULL),
+        clang_formatDiagnostic_(NULL),
+        clang_defaultDiagnosticDisplayOptions_(NULL),
+        clang_getCString_(NULL),
+        clang_disposeString_(NULL)
    {
    }
 
-   void* pLibClang;
-   ptr_clang_createIndex pClang_createIndex;
-   ptr_clang_disposeIndex pClang_disposeIndex;
-   ptr_clang_parseTranslationUnit pClang_parseTranslationUnit;
-   ptr_clang_disposeTranslationUnit pClang_disposeTranslationUnit;
-   ptr_clang_getNumDiagnostics pClang_getNumDiagnostics;
-   ptr_clang_getDiagnostic pClang_getDiagnostic;
-   ptr_clang_formatDiagnostic pClang_formatDiagnostic;
-   ptr_clang_defaultDiagnosticDisplayOptions pClang_defaultDiagnosticDisplayOptions;
-   ptr_clang_getCString pClang_getCString;
-   ptr_clang_disposeString pClang_disposeString;
+   void* pLibClang_;
+   ptr_clang_createIndex clang_createIndex_;
+   ptr_clang_disposeIndex clang_disposeIndex_;
+   ptr_clang_parseTranslationUnit clang_parseTranslationUnit_;
+   ptr_clang_disposeTranslationUnit clang_disposeTranslationUnit_;
+   ptr_clang_getNumDiagnostics clang_getNumDiagnostics_;
+   ptr_clang_getDiagnostic clang_getDiagnostic_;
+   ptr_clang_formatDiagnostic clang_formatDiagnostic_;
+   ptr_clang_defaultDiagnosticDisplayOptions clang_defaultDiagnosticDisplayOptions_;
+   ptr_clang_getCString clang_getCString_;
+   ptr_clang_disposeString clang_disposeString_;
 };
 
-Clang::Clang()
+LibClang::LibClang()
    : pImpl_(new Impl())
 {
 }
 
-Clang::~Clang()
+LibClang::~LibClang()
 {
    try
    {
-      if (pImpl_->pLibClang != NULL)
+      if (pImpl_->pLibClang_ != NULL)
       {
          std::string errorMessage;
-         if (!closeLibrary(pImpl_->pLibClang, &errorMessage))
+         if (!closeLibrary(pImpl_->pLibClang_, &errorMessage))
             std::cerr << errorMessage << std::endl;
       }
 
@@ -157,52 +157,44 @@ Clang::~Clang()
 }
 
 
-bool Clang::initialize(std::string* pError)
+#define LOAD_CLANG_SYMBOL(name) \
+   if (!loadSymbol(pImpl_->pLibClang_, \
+                   #name, \
+                   (void**)&pImpl_->name ## _, pError)) \
+       return false;
+
+bool LibClang::initialize(std::string* pError)
 {
-   if (!loadLibrary("libclang.so", (void**)&pImpl_->pLibClang, pError))
+   if (!loadLibrary("libclang.so", (void**)&pImpl_->pLibClang_, pError))
        return false;
 
-   if (!loadSymbol(pImpl_->pLibClang,
-                   "clang_createIndex",
-                   (void**)&pImpl_->pClang_createIndex,
-                   pError))
-       return false;
-
-   if (!loadSymbol(pImpl_->pLibClang,
-                   "clang_disposeIndex",
-                   (void**)&pImpl_->pClang_disposeIndex,
-                   pError))
-      return false;
-
-   if (!loadSymbol(pImpl_->pLibClang,
-                   "clang_parseTranslationUnit",
-                   (void**)&pImpl_->pClang_parseTranslationUnit,
-                   pError))
-      return false;
-
-   if (!loadSymbol(pImpl_->pLibClang,
-                   "clang_disposeTranslationUnit",
-                   (void**)&pImpl_->pClang_disposeTranslationUnit,
-                   pError))
-      return false;
-
+   LOAD_CLANG_SYMBOL(clang_createIndex)
+   LOAD_CLANG_SYMBOL(clang_disposeIndex)
+   LOAD_CLANG_SYMBOL(clang_parseTranslationUnit)
+   LOAD_CLANG_SYMBOL(clang_disposeTranslationUnit)
+   LOAD_CLANG_SYMBOL(clang_getNumDiagnostics)
+   LOAD_CLANG_SYMBOL(clang_getDiagnostic);
+   LOAD_CLANG_SYMBOL(clang_formatDiagnostic);
+   LOAD_CLANG_SYMBOL(clang_defaultDiagnosticDisplayOptions);
+   LOAD_CLANG_SYMBOL(clang_getCString);
+   LOAD_CLANG_SYMBOL(clang_disposeString);
 
    return true;
 }
 
-CXIndex Clang::createIndex(int excludeDeclarationsFromPCH,
-                           int displayDiagnostics)
+CXIndex LibClang::createIndex(int excludeDeclarationsFromPCH,
+                              int displayDiagnostics)
 {
-   return pImpl_->pClang_createIndex(excludeDeclarationsFromPCH,
+   return pImpl_->clang_createIndex_(excludeDeclarationsFromPCH,
                                      displayDiagnostics);
 }
 
-void Clang::disposeIndex(CXIndex index)
+void LibClang::disposeIndex(CXIndex index)
 {
-   pImpl_->pClang_disposeIndex(index);
+   pImpl_->clang_disposeIndex_(index);
 }
 
-CXTranslationUnit Clang::parseTranslationUnit(
+CXTranslationUnit LibClang::parseTranslationUnit(
                                    CXIndex CIdx,
                                    const char *source_filename,
                                    const char * const *command_line_args,
@@ -211,7 +203,7 @@ CXTranslationUnit Clang::parseTranslationUnit(
                                    unsigned num_unsaved_files,
                                    unsigned options)
 {
-   return pImpl_->pClang_parseTranslationUnit(CIdx,
+   return pImpl_->clang_parseTranslationUnit_(CIdx,
                                               source_filename,
                                               command_line_args,
                                               num_command_line_args,
@@ -220,10 +212,38 @@ CXTranslationUnit Clang::parseTranslationUnit(
                                               options);
 }
 
-void Clang::disposeTranslationUnit(CXTranslationUnit unit)
+void LibClang::disposeTranslationUnit(CXTranslationUnit unit)
 {
-   pImpl_->pClang_disposeTranslationUnit(unit);
+   pImpl_->clang_disposeTranslationUnit_(unit);
 }
 
+unsigned LibClang::getNumDiagnostics(CXTranslationUnit unit)
+{
+   return pImpl_->clang_getNumDiagnostics_(unit);
+}
 
+CXDiagnostic LibClang::getDiagnostic(CXTranslationUnit unit, unsigned index)
+{
+   return pImpl_->clang_getDiagnostic_(unit, index);
+}
+
+CXString LibClang::formatDiagnostic(CXDiagnostic diag, unsigned options)
+{
+   return pImpl_->clang_formatDiagnostic_(diag, options);
+}
+
+unsigned LibClang::defaultDiagnosticDisplayOptions(void)
+{
+   return pImpl_->clang_defaultDiagnosticDisplayOptions_();
+}
+
+const char * LibClang::getCString(CXString string)
+{
+   return pImpl_->clang_getCString_(string);
+}
+
+void LibClang::disposeString(CXString string)
+{
+   pImpl_->clang_disposeString_;
+}
 
