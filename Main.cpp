@@ -2,14 +2,13 @@
 #include <stdlib.h>
 #include <iostream>
 
-
 #include "Clang.hpp"
 
 int main(int argc, char * const argv[]) 
 {
-   LibClang libClang;
+   LibClang libClang("libclang.so");
    std::string initError;
-   if (!libClang.initialize(&initError))
+   if (!libClang.isLoaded(&initError))
    {
       std::cerr << initError << std::endl;
       return EXIT_FAILURE;
@@ -19,8 +18,8 @@ int main(int argc, char * const argv[])
 
    CXTranslationUnit TU = libClang.parseTranslationUnit(index,
                                                      0,
-                                                     argv,
-                                                     argc,
+                                                     argv+1,
+                                                     argc-1,
                                                      0,
                                                      0,
                                                      CXTranslationUnit_None);
