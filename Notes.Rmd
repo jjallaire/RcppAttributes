@@ -1,0 +1,12 @@
+RcppAttributes
+========================================================
+
+```{r,eval=FALSE}
+compile.attributes(file=NA, dir=NA, target=c("package","script"))
+
+source.cpp <- function(file="foo.cpp") {
+  compile.attributes(path.to.file(file), target="script")
+}
+```
+
+
