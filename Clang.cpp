@@ -3,7 +3,7 @@
 #include <iostream>
 
 #ifdef _WIN32
-
+#include <windows.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -13,6 +13,79 @@ namespace {
 
 #ifdef _WIN32
 
+std::string getLastErrorMessage(const std::string& context)
+{
+   LPVOID lpMsgBuf;
+   DWORD dw = ::GetLastError();
+
+   DWORD length = ::FormatMessage(
+       FORMAT_MESSAGE_ALLOCATE_BUFFER |
+       FORMAT_MESSAGE_FROM_SYSTEM |
+       FORMAT_MESSAGE_IGNORE_INSERTS,
+       NULL,
+       dw,
+       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+       (LPTSTR) &lpMsgBuf,
+       0, NULL );
+
+   if (length != 0)
+   {
+      std::string msg((LPTSTR)lpMsgBuf);
+      msg.append(" (" + context + ")");
+      LocalFree(lpMsgBuf);
+      return msg;
+   }
+   else
+   {
+     return "Unknown error " + context;
+   }
+}
+
+bool loadLibrary(const std::string& libPath, void** ppLib, std::string* pError)
+{
+   *ppLib = NULL;
+   *ppLib = (void*)::LoadLibraryEx(libPath.c_str(), NULL, 0);
+   if (*ppLib == NULL)
+   {
+      *pError = getLastErrorMessage("loading library " + libPath);
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
+
+bool loadSymbol(void* pLib,
+                const std::string& name,
+                void** ppSymbol,
+                std::string* pError)
+{
+   *ppSymbol = NULL;
+   *ppSymbol = (void*)::GetProcAddress((HINSTANCE)pLib, name.c_str());
+   if (*ppSymbol == NULL)
+   {
+      *pError = getLastErrorMessage("loading symbol " + name);
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
+
+bool closeLibrary(void* pLib, std::string* pError)
+{
+   if (!::FreeLibrary((HMODULE)pLib))
+   {
+      *pError = getLastErrorMessage("closing library");
+      return false;
+   }
+   else
+   {
+      return true;
+   }
+}
 
 #else
 
@@ -279,7 +352,7 @@ LibClang::LibClang(const std::string& libraryPath)
 
 bool LibClang::isLoaded(std::string* pError)
 {
-   if (pLib_ != NULL)
+   if (initError_.empty())
    {
       return true;
    }

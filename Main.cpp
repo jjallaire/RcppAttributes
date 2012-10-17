@@ -1,5 +1,5 @@
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 
 #include "Clang.hpp"
@@ -7,7 +7,7 @@
 std::string getLibClangPath()
 {
 #if defined(_WIN32)
-
+   return "C:\\Users\\jjallaire\\Desktop\\libclang.dll";
 #elif defined(__APPLE__)
    return "/usr/lib/libclang.dylib";
 #else
