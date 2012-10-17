@@ -9,8 +9,7 @@ std::string getLibClangPath()
 #if defined(_WIN32)
 
 #elif defined(__APPLE__)
-
-
+   return "/usr/lib/libclang.dylib";
 #else
    return "/usr/lib/libclang.so";
 #endif
