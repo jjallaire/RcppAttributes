@@ -50,14 +50,16 @@ public:
    unsigned (*equalRanges)(CXSourceRange range1, CXSourceRange range2);
    int (*Range_isNull)(CXSourceRange range);
 
-   /* Not available in debian libclang.so
-      see: https://github.com/quarnster/SublimeClang/commit/52916c634773baf35ef314bf7c4ac18558b7d297
+   // Not available in Ubuntu 12.04 libclang.so. Therefore:
+   //   - It's not a fatal error if a lookup for this symbol fails
+   //   - Call hasGetExpansionLocation to check for availability before using
+   bool hasGetExpansionLocation() const { return getExpansionLocation != NULL; }
    void (*getExpansionLocation)(CXSourceLocation location,
                                 CXFile *file,
                                 unsigned *line,
                                 unsigned *column,
                                 unsigned *offset);
-   */
+
    void (*getPresumedLocation)(CXSourceLocation location,
                                CXString *filename,
                                unsigned *line,

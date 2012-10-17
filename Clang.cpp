@@ -16,13 +16,22 @@ namespace {
 
 #else
 
+std::string getLastDlerror(const std::string& context)
+{
+   const char* msg = ::dlerror();
+   if (msg != NULL)
+      return std::string(msg);
+   else
+      return "Unknown error " + context;
+}
+
 bool loadLibrary(const std::string& libPath, void** ppLib, std::string* pError)
 {
    *ppLib = NULL;
    *ppLib = ::dlopen(libPath.c_str(), RTLD_NOW);
    if (*ppLib == NULL)
    {
-      *pError = std::string(::dlerror());
+      *pError = getLastDlerror("loading library " + libPath);
       return false;
    }
    else
@@ -40,7 +49,7 @@ bool loadSymbol(void* pLib,
    *ppSymbol = ::dlsym(pLib, name.c_str());
    if (*ppSymbol == NULL)
    {
-      *pError = std::string(::dlerror());
+      *pError = getLastDlerror("loading symbol " + name);
       return false;
    }
    else
@@ -53,7 +62,7 @@ bool closeLibrary(void* pLib, std::string* pError)
 {
    if (::dlclose(pLib) != 0)
    {
-      *pError = std::string(::dlerror());
+      *pError = getLastDlerror("closing library");
       return false;
    }
    else
@@ -96,8 +105,18 @@ LibClang::LibClang(const std::string& libraryPath)
    LOAD_CLANG_SYMBOL(getRange)
    LOAD_CLANG_SYMBOL(equalRanges)
    LOAD_CLANG_SYMBOL(Range_isNull)
-   //LOAD_CLANG_SYMBOL(getExpansionLocation)
-   // why segfault on this not found????
+
+   // not a fatal error if clang_getExpansionLocation isn't found
+   // (it isn't exported from libclang.so in Ubuntu 12.04)
+   std::string ignoredError;
+   if (!loadSymbol(pLib_,
+                   "clang_getExpansionLocation",
+                   (void**)&getExpansionLocation,
+                    &ignoredError))
+   {
+      getExpansionLocation = NULL;
+   }
+
    LOAD_CLANG_SYMBOL(getPresumedLocation)
    LOAD_CLANG_SYMBOL(getInstantiationLocation)
    LOAD_CLANG_SYMBOL(getSpellingLocation)
