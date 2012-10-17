@@ -20,10 +20,23 @@ public:
 
    bool initialize(std::string* pError);
 
+   // strings
+   const char * getCString(CXString string);
+   void disposeString(CXString string);
+
+   // indexes
    CXIndex createIndex(int excludeDeclarationsFromPCH,
                        int displayDiagnostics);
    void disposeIndex(CXIndex index);
 
+   // diagnostics
+   unsigned getNumDiagnostics(CXTranslationUnit unit);
+   CXDiagnostic getDiagnostic(CXTranslationUnit unit, unsigned index);
+   void disposeDiagnostic(CXDiagnostic diag);
+   CXString formatDiagnostic(CXDiagnostic diag, unsigned options);
+   unsigned defaultDiagnosticDisplayOptions(void);
+
+   // translation units
    CXTranslationUnit parseTranslationUnit(
                                       CXIndex CIdx,
                                       const char *source_filename,
@@ -32,20 +45,11 @@ public:
                                       struct CXUnsavedFile *unsaved_files,
                                       unsigned num_unsaved_files,
                                       unsigned options);
-
    void disposeTranslationUnit(CXTranslationUnit unit);
 
-   unsigned getNumDiagnostics(CXTranslationUnit unit);
 
-   CXDiagnostic getDiagnostic(CXTranslationUnit unit, unsigned index);
 
-   CXString formatDiagnostic(CXDiagnostic diag, unsigned options);
 
-   unsigned defaultDiagnosticDisplayOptions(void);
-
-   const char * getCString(CXString string);
-
-   void disposeString(CXString string);
 
 
 private:
